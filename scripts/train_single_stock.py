@@ -1,25 +1,21 @@
-import gym
-from stable_baselines3 import A2C
-from time import time
-import logging
+from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3 import PPO
 
-logging.basicConfig(filename='logging.log', level=logging.INFO)
+from envs.single_stock.env import StockTradingEnv
 
-env = gym.make('CartPole-v1')
+import pandas as pd
 
-model = A2C('MlpPolicy', env, verbose=1, device="cuda")
+df = pd.read_csv('../data/raw/AAPL.csv')
+df = df.sort_values('Date')
 
-t = time()
-model.learn(total_timesteps=50000)
-logging.debug(f'elapsed time: {time() - t}')
+# The algorithms require a vectorized environment to run
+env = DummyVecEnv([lambda: StockTradingEnv(df)])
+
+model = PPO("MlpPolicy", env, verbose=1)
+model.learn(total_timesteps=200_000)
 
 obs = env.reset()
-
-t = time()
-for i in range(1000):
-    logging.info(i)
-    action, _state = model.predict(obs, deterministic=True)
-    obs, reward, done, info = env.step(action)
+for i in range(2000):
+    action, _states = model.predict(obs)
+    obs, rewards, done, info = env.step(action)
     env.render()
-    if done:
-      obs = env.reset()

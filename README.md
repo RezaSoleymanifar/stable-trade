@@ -1,4 +1,5 @@
-# stable-trade 
+![](assets/images/stable-trade.PNG)
+
 `stable-trade` is a stock trading API for
 `stable-baselines3`, a deep reinforcement learning package based
 on `pytorch`.
